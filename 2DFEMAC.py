@@ -25,8 +25,9 @@ def one_dim_M_K(x, ndofs,degree):
     intervals = np.unique(basis[0].x)
     
     qp, w = leg.leggauss(degree)
-    qp = (qp + 1) / 2 
-    w /= 2           
+    qp += 1.
+    qp /= 2.
+    w /= 2.           
     
     h = np.diff(intervals)
     Q = np.array([intervals[i] + h[i] * qp for i in range(len(h))]).reshape((-1,))
@@ -117,7 +118,12 @@ if __name__ == '__main__':
     ndofs = 40
     degree = 2
     
-    func0 = lambda x,y: 1/(1+100*((x-.5)**2+(y-.5)**2))
+    funcs = [
+        
+        lambda x, y: 1 / (1 + 100 * ((x - 0.5) ** 2 + (y - 0.5) ** 2)),
+        lambda x, y: np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
+    ]
     
-    eta_2d,n = solver(func0, eps, dt, ndofs, degree)
-    plot_2d(eta_2d, n, dt, ndofs)
+    for func0 in funcs:
+        eta_2d, n = solver(func0, eps, dt, ndofs, degree)
+        plot_2d(eta_2d, n, dt, ndofs)
