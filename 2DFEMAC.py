@@ -7,7 +7,7 @@
 import sympy as sym
 import numpy as np
 from scipy.interpolate import *
-import numpy.polynomial.legendre as leg
+from scipy.special import roots_legendre
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -18,23 +18,23 @@ F = sym.lambdify(t,F, 'numpy') #Double well Potential
 
 def one_dim_M_K(x, ndofs,degree):
     
-    basis = [PPoly.from_spline(splrep(x, np.eye(ndofs)[i], k=degree)) for i in range(ndofs)]
-    dbasis = [basis[i].derivative(1) for i in range(len(basis))]
+    basisfun = [PPoly.from_spline(splrep(x, np.eye(ndofs)[i], k=degree)) for i in range(ndofs)]
+    dbasisfun = [basisfun[i].derivative(1) for i in range(len(basisfun))]
     
-    m = len(basis)
-    intervals = np.unique(basis[0].x)
+    m = len(basisfun)
+    intervals = np.unique(basisfun[0].x)
     
-    qp, w = leg.leggauss(degree)
-    qp += 1.
-    qp /= 2.
+    q, w = roots_legendre(degree)
+    q += 1.
+    q /= 2.
     w /= 2.           
     
     h = np.diff(intervals)
-    Q = np.array([intervals[i] + h[i] * qp for i in range(len(h))]).reshape((-1,))
+    Q = np.array([intervals[i] + h[i] * q for i in range(len(h))]).reshape((-1,))
     W = np.array([w * h[i] for i in range(len(h))]).reshape((-1,))
 
-    Bq = np.array([basis[i](Q) for i in range(m)]).T
-    dBq = np.array([dbasis[i](Q) for i in range(m)]).T
+    Bq = np.array([basisfun[i](Q) for i in range(m)]).T
+    dBq = np.array([dbasisfun[i](Q) for i in range(m)]).T
 
     M = np.array([[np.dot(Bq[:, i] * W, Bq[:, j]) for j in range(m)] for i in range(m)])
     K = np.array([[np.dot(dBq[:, i] * W, dBq[:, j]) for j in range(m)] for i in range(m)])
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     
     eps = 0.01
     dt = 0.1
-    ndofs = 40
+    ndofs = 20
     degree = 2
     
     funcs = [
