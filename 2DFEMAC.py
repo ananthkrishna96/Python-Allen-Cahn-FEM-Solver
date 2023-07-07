@@ -50,30 +50,25 @@ def two_dim_tensor_M_K(M,K,n):
                     
     return M_2d, K_2d
 
-def solver(func0,eps,dt,ndofs,degree):
-    
+def solver(func0, eps, dt, ndofs, degree):
     x = np.linspace(0, 1, ndofs)
     y = np.linspace(0, 1, ndofs)
-    n_steps = int(1/dt) + 1
-    
-    M,K = one_dim_M_K(x, ndofs, degree)
-    
+    n_steps = int(1 / dt) + 1
+
+    M, K = one_dim_M_K(x, ndofs, degree)
     n = M.shape[0]
-    
-    M_2d, K_2d = two_dim_tensor_M_K(M,K,n)
-    
-    eta_2d = np.zeros((n_steps, n * n))
-    eta_2d[0] = func0(x[:, np.newaxis], y[np.newaxis, :]).flatten()
+    M_2d, K_2d = two_dim_tensor_M_K(M, K, n)
 
-    b_2d = M_2d.dot(eta_2d[0] - dt * F(eta_2d[0].reshape((n, n))).flatten())
+    eta_2d = np.zeros((n_steps, n**2))
+    for i in range(n_steps):
+        if i == 0:
+            eta_2d[i] = func0(x[:, np.newaxis], y[np.newaxis, :]).flatten()
+        else:
+            A_2d = M_2d + dt * eps ** 2 * K_2d
+            b_2d = M_2d.dot(eta_2d[i - 1] - dt * F(eta_2d[i - 1].reshape((n, n))).flatten())
+            eta_2d[i] = np.linalg.solve(A_2d, b_2d)
 
-    for i in range(1, n_steps):
-        A_2d = M_2d + dt * eps**2 * K_2d
-        eta_2d[i] = np.linalg.solve(A_2d, b_2d)
-        b_2d = M_2d.dot(eta_2d[i] - dt * F(eta_2d[i].reshape((n, n))).flatten())
-    
-    return eta_2d,n
-
+    return eta_2d, n
 
 def plot_2d(eta_2d, n, dt, ndofs):
     
