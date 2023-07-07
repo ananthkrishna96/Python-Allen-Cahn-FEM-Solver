@@ -45,15 +45,8 @@ def two_dim_tensor_M_K(M,K,n):
     
     assert M.shape[0] == K.shape[0], f"Shape Mismatch between M anb K"
 
-    M_2d = np.zeros((n * n, n * n))
-    K_2d = np.zeros((n * n, n * n))
-
-    for i in range(n):
-        for j in range(n):
-            for k in range(n):
-                for l in range(n):
-                    M_2d[i * n + j, k * n + l] = M[i, k]*M[j,l]
-                    K_2d[i * n + j, k * n + l] = K[i, k]*M[j,l] + M[i,k]*K[j,l]
+    M_2d = np.einsum('ik,jl->ijkl', M, M).reshape(n**2, n**2)
+    K_2d = np.einsum('ik,jl->ijkl', K, M).reshape((n**2, n**2)) + np.einsum('ik,jl->ijkl', M, K).reshape((n**2, n**2))
                     
     return M_2d, K_2d
 
@@ -119,10 +112,9 @@ if __name__ == '__main__':
     degree = 2
     
     funcs = [
-        
-        lambda x, y: 1 / (1 + 100 * ((x - 0.5) ** 2 + (y - 0.5) ** 2)),
-        lambda x, y: np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
-    ]
+             lambda x, y: 1 / (1 + 100 * ((x - 0.5) ** 2 + (y - 0.5) ** 2)),
+             #lambda x, y: np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
+            ]
     
     for func0 in funcs:
         eta_2d, n = solver(func0, eps, dt, ndofs, degree)
