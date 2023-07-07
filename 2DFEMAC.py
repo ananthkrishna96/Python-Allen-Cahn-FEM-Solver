@@ -41,12 +41,12 @@ def one_dim_M_K(x, ndofs,degree):
     
     return M,K
 
-def two_dim_tensor_M_K(M,K,n):
+def two_dim_tensor_M_K(M,K,ndofs):
     
     assert M.shape[0] == K.shape[0], f"Shape Mismatch between M anb K"
 
-    M_2d = np.einsum('ik,jl->ijkl', M, M).reshape(n**2, n**2)
-    K_2d = np.einsum('ik,jl->ijkl', K, M).reshape((n**2, n**2)) + np.einsum('ik,jl->ijkl', M, K).reshape((n**2, n**2))
+    M_2d = np.einsum('ik,jl->ijkl', M, M).reshape(ndofs**2, ndofs**2)
+    K_2d = np.einsum('ik,jl->ijkl', K, M).reshape((ndofs**2, ndofs**2)) + np.einsum('ik,jl->ijkl', M, K).reshape((ndofs**2, ndofs**2))
                     
     return M_2d, K_2d
 
@@ -56,61 +56,55 @@ def solver(func0, eps, dt, ndofs, degree):
     n_steps = int(1 / dt) + 1
 
     M, K = one_dim_M_K(x, ndofs, degree)
-    n = M.shape[0]
-    M_2d, K_2d = two_dim_tensor_M_K(M, K, n)
+    M_2d, K_2d = two_dim_tensor_M_K(M, K, ndofs)
 
-    eta_2d = np.zeros((n_steps, n**2))
+    eta_2d = np.zeros((n_steps, ndofs**2))
     for i in range(n_steps):
         if i == 0:
             eta_2d[i] = func0(x[:, np.newaxis], y[np.newaxis, :]).flatten()
         else:
             A_2d = M_2d + dt * eps ** 2 * K_2d
-            b_2d = M_2d.dot(eta_2d[i - 1] - dt * F(eta_2d[i - 1].reshape((n, n))).flatten())
+            b_2d = M_2d.dot(eta_2d[i - 1] - dt * F(eta_2d[i - 1].reshape((ndofs, ndofs))).flatten())
             eta_2d[i] = np.linalg.solve(A_2d, b_2d)
 
-    return eta_2d, n
+    return eta_2d
 
-def plot_2d(eta_2d, n, dt, ndofs):
-    
+def plot_2d(eta_2d, dt, ndofs):
     x = np.linspace(0, 1, ndofs)
     y = np.linspace(0, 1, ndofs)
-    n_steps = int(1/dt) + 1
-    
+    n_steps = int(1 / dt) + 1
+
     X, Y = np.meshgrid(x, y)
-    
+
     # 3D surface plot
-    eta_2d_grid = eta_2d.reshape((n_steps, n, n))
+    eta_2d_grid = eta_2d.reshape((n_steps, ndofs, ndofs))
     fig = plt.figure(figsize=(13, 5))
     ax = fig.add_subplot(121, projection='3d')
-    ax.plot_surface(X, Y, eta_2d_grid[-1], cmap='viridis',
-                   linewidth=0.5, antialiased=True)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('eta')
-    ax.set_title('3D Surface Plot')
+    ax.plot_surface(X, Y, eta_2d_grid[-1], cmap='viridis', linewidth=0.5, antialiased=True)
+    ax.set(xlabel='X', ylabel='Y', zlabel='eta', title='3D Surface Plot')
 
     # Contour plot
-    eta_2d_contour = eta_2d[-1].reshape((n, n))
-    fig.add_subplot(122)
-    plt.contourf(X, Y, eta_2d_contour, levels=100, cmap='viridis')
-    plt.colorbar(label='eta')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Contour Plot')
-    plt.show()
+    eta_2d_contour = eta_2d[-1].reshape((ndofs, ndofs))
+    ax = fig.add_subplot(122)
+    contour = ax.contourf(X, Y, eta_2d_contour, levels=100, cmap='viridis')
+    fig.colorbar(contour, ax=ax, label='eta')
+    ax.set(xlabel='x', ylabel='y', title='Contour Plot')
 
+    plt.tight_layout()
+    plt.show()
+    
 if __name__ == '__main__':
     
     eps = 0.01
     dt = 0.1
-    ndofs = 20
+    ndofs = 50
     degree = 2
     
     funcs = [
              lambda x, y: 1 / (1 + 100 * ((x - 0.5) ** 2 + (y - 0.5) ** 2)),
-             #lambda x, y: np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
+             lambda x, y: np.sin(2 * np.pi * x) * np.cos(2 * np.pi * y)
             ]
     
     for func0 in funcs:
-        eta_2d, n = solver(func0, eps, dt, ndofs, degree)
-        plot_2d(eta_2d, n, dt, ndofs)
+        eta_2d = solver(func0, eps, dt, ndofs, degree)
+        plot_2d(eta_2d, dt, ndofs)
