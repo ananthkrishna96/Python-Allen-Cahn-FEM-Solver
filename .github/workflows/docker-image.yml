@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image build and Run test FEM 2D AC
 
 on:
   push:
@@ -12,5 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag femac2d
+    - name: Build Docker image
+      run: docker build -t fem2dac .
+
+    - name: Run test FEM 2D AC
+      run: docker run fem2dac
