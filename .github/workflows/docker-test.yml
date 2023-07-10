@@ -1,0 +1,16 @@
+name: FEM 2D AC Test with Docker
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run FEM 2D AC Test
+      run: docker run femac2d:1688997156
