@@ -18,8 +18,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
     - uses: actions/checkout@v3
     - name: Build Docker image
-      run: docker build -t fem2dac .
+      run: docker build . --file Dockerfile --tag docker.io/ananthkrishna96/fem2dac:$GITHUB_SHA
     - name: Push Docker image
-      run: docker push ananthkrishna96/fem2dac:latest10
+      run: docker push docker.io/ananthkrishna96/fem2dac:$GITHUB_SHA
     - name: Run test FEM 2D AC
       run: docker run fem2dac
