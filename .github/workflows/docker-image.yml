@@ -18,7 +18,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
     - uses: actions/checkout@v3
     - name: Build Docker image Locally
-      run: docker build fem2dacloc .
+      run: docker build -t fem2dacloc .
     - name: Run test FEM 2D AC Locally
       run: docker run fem2dacloc
       
