@@ -20,6 +20,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t fem2dac .
     - name: Push Docker image
-      run: docker push ananthkrishna96/fem2dac:latest
+      run: docker push ananthkrishna96/fem2dac:latest10
     - name: Run test FEM 2D AC
       run: docker run fem2dac
