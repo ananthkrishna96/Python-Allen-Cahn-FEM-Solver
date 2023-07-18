@@ -1,11 +1,10 @@
-FROM python:3.9
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install numpy sympy scipy matplotlib
+RUN pip install --no-cache-dir numpy sympy scipy matplotlib \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY FEMAC2D.py /
-COPY test_FEMAC2D.py /
-COPY . .
+COPY FEMAC2D.py test_FEMAC2D.py /app/
 
 CMD ["python", "test_FEMAC2D.py"]
