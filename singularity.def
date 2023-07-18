@@ -1,0 +1,14 @@
+Bootstrap: docker
+From: python:3.11-slim
+
+%post
+    pip install --no-cache-dir numpy sympy scipy matplotlib \
+    && rm -rf /var/lib/apt/lists/*
+    
+%files
+    FEMAC2D.py /app/
+    test_FEMAC2D.py /app/
+
+%runscript
+    python $APP_HOME/test_FEMAC2D.py
+
