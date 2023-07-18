@@ -23,8 +23,8 @@ jobs:
       run: docker run fem2dacloc
       
     - name: Build Docker image - DockerHub
-      run: docker build . --file Dockerfile --tag docker.io/ananthkrishna96/fem2dac:$GITHUB_SHA
+      run: docker build . --file Dockerfile --tag docker.io/ananthkrishna96/fem2dac:latest
     - name: Push Docker image
-      run: docker push docker.io/ananthkrishna96/fem2dac:$GITHUB_SHA
+      run: docker push docker.io/ananthkrishna96/fem2dac:latest
     - name: Run test FEM 2D AC - DockerHub
-      run: docker run docker.io/ananthkrishna96/fem2dac:$GITHUB_SHA
+      run: docker run docker.io/ananthkrishna96/fem2dac:latest
